@@ -12,10 +12,7 @@ class CommunityLink extends Model
       'title',
       'link'
     ];
-    public function creator()
-    {
-      return $this->belongsTo(User::class, 'user_id');
-    }
+
 
     public static function from(User $user)
     {
@@ -23,13 +20,21 @@ class CommunityLink extends Model
 
       $link->user_id = $user->id;
 
-      $link->channel_id = 1;
-
       return $link;
     }
 
     public function contribute($attributes)
     {
       return $this->fill($attributes)->save();
+    }
+
+    public function creator()
+    {
+      return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function channel()
+    {
+      return $this->belongsTo(Channel::class);
     }
 }
