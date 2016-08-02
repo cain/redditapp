@@ -14,14 +14,19 @@ class CommunityLinksController extends Controller
 {
     //
 
-    public function index()
+    public function index(Channel $channel = null)
     {
-      $links = CommunityLink::paginate(25);
+
+
+      $links = CommunityLink::forChannel($channel)
+      ->latest('updated_at')
+      ->paginate(5);
+
       $channels = Channel::orderBy('title', 'asc')->get();
 
 
 
-      return view('community.index', compact('links', 'channels'));
+      return view('community.index', compact('links', 'channels', 'channel'));
     }
 
     public function store(Request $request)
@@ -29,15 +34,22 @@ class CommunityLinksController extends Controller
       $this->validate($request, [
           'channel_id' => 'required|exists:channels,id',
           'title' => 'required',
-          'link' => 'required|url|unique:community_links'
+          'link' => 'required|url'
 
       ]);
 
       CommunityLink::from(auth()->user())
-              ->contribute($request->all());
+              ->contribute($request->all(), $this);
 
 
-      flash()->Success('Successfully Submitted Article');
+        // flash()->Success('Successfully Submitted Article');
+
+      return back();
+    }
+
+    public function whenSpecialCircumstance()
+    {
+      flash()->Success('Already Subbmited');
 
       return back();
     }

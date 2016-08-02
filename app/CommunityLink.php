@@ -23,9 +23,29 @@ class CommunityLink extends Model
       return $link;
     }
 
-    public function contribute($attributes)
+    public function contribute($attributes, $caller)
     {
-      return $this->fill($attributes)->save();
+      if ($existing = $this->hasAlreadyBeenSubmitted($attributes['link'])) {
+
+          return $existing->touch();
+
+          $caller->whenSpecialCircumstance();
+
+      } else {
+
+        return $this->fill($attributes)->save();
+
+      }
+
+    }
+
+    public function scopeForChannel($builder, $channel)
+    {
+      if ($channel->id) {
+        return $builder->where('channel_id', $channel->id);
+      }
+
+      return $builder;
     }
 
     public function creator()
@@ -37,4 +57,11 @@ class CommunityLink extends Model
     {
       return $this->belongsTo(Channel::class);
     }
+
+    protected function hasAlreadyBeenSubmitted($link)
+    {
+      return static::where('link', $link)->first();
+    }
+
+
 }
